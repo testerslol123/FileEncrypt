@@ -1,5 +1,7 @@
 package testers.com.fileencrypt;
 
+import android.util.Log;
+
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 
@@ -23,6 +25,7 @@ import javax.crypto.NoSuchPaddingException;
 public class FileEncrypt {
     private static byte[] loadFile(String FilePath) throws IOException
     {
+        Log.d("Kripto", "file path nya = " + FilePath);
         File f = new File(FilePath);
         FileInputStream inData = new FileInputStream(f);
 
@@ -99,7 +102,7 @@ public class FileEncrypt {
         enc.setEncParameters(alg, pwd, KeySize, mode);
         byte[] bytesRes = enc.CBCEncrypt(plain, alg);
 
-        save2File(inFile + ".dankripsi", bytesRes);
+        save2File(inFile + ".enc", bytesRes);
 
         res = "Done! file contents encrypted and saved to a corresponding enc file!";
         return res;
@@ -115,14 +118,19 @@ public class FileEncrypt {
             return res;
         }
 
+        Log.d("Kripto", "Sebelum load file");
         byte[] Encrypted = loadFile(inFile);
-
+        Log.d("Kripto", "Setelah Load File");
 
         Encryptor enc = new Encryptor();
         enc.setParameters(KeySize, alg);
         enc.setDecParameters(Encrypted, alg, pwd, KeySize, mode);
-        byte[] bytesRes = enc.CBCDecrypt(Encrypted, alg);
 
+        Log.d("Kripto", "Sebelum CBCDecrypt di eksekusi");
+        byte[] bytesRes = enc.CBCDecrypt(Encrypted, alg);
+        Log.d("Kripto", "Setelah CBCDecrypt dieksekusi");
+
+        Log.d("Kripto", "setelah di decript");
         save2File(inFile.substring(0, inFile.lastIndexOf(".")), bytesRes);
 
         res = "Done! file contents decrypted and saved to the specified directory!";

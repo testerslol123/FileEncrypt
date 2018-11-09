@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,8 +68,53 @@ public class MainActivity extends AppCompatActivity {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            //creating new thread to handle Http Operations
-                            uploadFile(selectedFilePath);
+
+                            long start = System.nanoTime();
+                            String OpRes = "";
+                            String kunciEnkripsi = "key123";
+                            Log.d("Kripto", "Setup File");
+                            CheckBox ceklist = (CheckBox) findViewById(R.id.checkBox);
+//                            boolean checked = ((CheckBox) findViewById(R.id.checkBox)).isChecked();
+
+
+                            try {
+                                // kalau di cek brarti harus dekripsi
+                                if (ceklist.isChecked()) {
+
+                                    Log.d("Kripto", "Cek list di centang");
+
+                                    OpRes = FileEncrypt.CBCDecrypt(4,128, selectedFilePath, kunciEnkripsi, "Q");
+
+                                    Log.d("Kripto", "Setelah di dekripsi, nama file nya = " + OpRes);
+
+
+                                } else {
+                                    OpRes = FileEncrypt.CBCEncrypt(4, 128, selectedFilePath, kunciEnkripsi, "Q");
+                                    Log.d("Kripto", "Setelah di enkripsi, nama file nya = " + OpRes);
+                                    FileEncrypt.wipeFile(selectedFilePath);
+                                }
+
+                                // creating new thread to handle Http Operations
+                                // uploadFile(selectedFilePath);
+
+                            } catch (NoSuchAlgorithmException e) {
+                                e.printStackTrace();
+                            } catch (InvalidKeySpecException e) {
+                                e.printStackTrace();
+                            } catch (InvalidCipherTextException e) {
+                                e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (InvalidKeyException e) {
+                                e.printStackTrace();
+                            } catch (NoSuchPaddingException e) {
+                                e.printStackTrace();
+                            } catch (IllegalBlockSizeException e) {
+                                e.printStackTrace();
+                            } catch (BadPaddingException e) {
+                                e.printStackTrace();
+                            }
+
                         }
                     }).start();
                 }else{
@@ -98,6 +144,9 @@ public class MainActivity extends AppCompatActivity {
 
                 Uri selectedFileUri = data.getData();
                 selectedFilePath = FilePath.getPath(this,selectedFileUri);
+
+
+                Log.d("Kripto", "selectedFilePath = " + selectedFilePath);
                 Log.i(TAG,"Selected File Path:" + selectedFilePath);
 
                 if(selectedFilePath != null && !selectedFilePath.equals("")){
@@ -124,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         int bytesRead,bytesAvailable,bufferSize;
         byte[] buffer;
         int maxBufferSize = 1 * 1024 * 1024;
-        File selectedFile = new File(selectedFilePath);
+        File selectedFile = new File(selectedFilePath + ".enc");
 
 
         String[] parts = selectedFilePath.split("/");
@@ -142,19 +191,6 @@ public class MainActivity extends AppCompatActivity {
             return 0;
         }else{
             try{
-
-
-                long start = System.nanoTime();
-                String OpRes = "";
-                String kunciEnkripsi = "key123";
-                Log.d("Kripto", "Setup Enkripsi File");
-
-                OpRes = FileEncrypt.CBCEncrypt(4, 128, selectedFilePath, kunciEnkripsi, "Q");
-
-                Log.d("Kripto", "Setelah di enkripsi, nama file nya = " + OpRes);
-
-
-
                 FileInputStream fileInputStream = new FileInputStream(selectedFile);
                 URL url = new URL(SERVER_URL);
                 connection = (HttpURLConnection) url.openConnection();
